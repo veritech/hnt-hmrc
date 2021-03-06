@@ -22,10 +22,10 @@ func main() {
 	router.Static("/static", "static")
 
 	router.GET("/data/:address", func(c *gin.Context) {
-		// address := c.Param("address")
+		address := c.Param("address")
 
 		c.JSON(http.StatusOK, gin.H{
-			"data": getTestData(), //getDataByAddress(address),
+			"data": getDataByAddress(address),
 		})
 	})
 

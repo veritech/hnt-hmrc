@@ -1,0 +1,92 @@
+/**
+- Generate HNT wallet for donations
+- Investigate using memcache for requests
+- Set dates for the 2020/2021 tax year
+- Deploy
+*/
+
+const INITIAL = 0;
+const BAD_ADDRESS = 1;
+const LOADING = 2;
+const LOADED = 3;
+const FAILED = 4;
+
+function setUIState(state) {
+  switch (state) {
+    case INITIAL:
+      $("#loading").hide();
+      $("#loaded").hide();
+      $("#error").hide();
+      break;
+    case BAD_ADDRESS:
+      $(".input-group").addClass("has-error");
+      break;
+    case LOADING:
+      $(".input-group").removeClass("has-error");
+      $("#loading").show();
+      $("#loaded").hide();
+      $("#error").hide();
+      break;
+    case LOADED:
+      $("#loading").hide();
+      $("#loaded").show();
+      $("#error").hide();
+      break;
+    case FAILED:
+      $("#loading").hide();
+      $("#loaded").hide();
+      $("#error").show();
+      break;
+  }
+}
+
+const formatter = new Intl.NumberFormat('en-GB', {
+  style: 'currency',
+  currency: 'GBP'
+});
+
+$(function() {
+  setUIState(INITIAL);
+  
+  $("#show-csv").click(() => {
+    $("#csv-results").toggle();
+  })
+
+  $("input#address").change(function(obj) {
+    const hntAddress = $("input#address").val();
+
+    if (hntAddress.length != 51) {
+      setUIState(BAD_ADDRESS);
+      return;
+    }
+
+    setUIState(LOADING);
+
+    $.getJSON("/data/" + hntAddress)
+      .done(function(response) {
+        setUIState(LOADED);
+
+        // Generate CSV
+        const header = "date, earnings, tokens mined, daily price\n";
+        const csv = response
+          .data
+          .map((o) => {
+            return o.date + "," + o.earnings + "," + o.tokens + "," + o.price + "\n";
+          })
+          .reduce((sum, value) => sum + value);
+
+        $("#csv-results").text(header + csv);
+
+        // Calculate total value
+        const totalEarnings = response
+          .data
+          .map((x) => x.earnings)
+          .reduce((sum, value) => sum + value);
+
+        $("#total-value").text(formatter.format(totalEarnings));
+      })
+      .fail(function(data) {
+        setUIState(FAILED);
+      });
+  });
+})

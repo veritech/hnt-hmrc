@@ -11,7 +11,7 @@ import (
 
 type DataPoint struct {
 	Date     string  `json:"date"`
-	Earnings float64 `json:"address"`
+	Earnings float64 `json:"earnings"`
 	Tokens   float64 `json:"tokens"`
 	Price    float64 `json:"price"`
 }

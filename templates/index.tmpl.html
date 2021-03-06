@@ -1,12 +1,52 @@
 <html>
   {{template "header.tmpl.html"}}
   <body>
-    <div class="jumbotron text-center">
+    <div class="jumbotron">
       <div class="container">
-        HNT Tax tools
+        <h1>HNT taxable earnings.</h1>
+        <p>It's tax time! This page will calculate the sum of your daily total earnings in GBP.</p>
       </div>
-      <div>
-        <input type="text" />
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <div class="input-group input-group-lg">
+            <span class="input-group-addon" id="basic-addon1">Helium Address</span>
+            <input id="address" type="text" class="form-control" placeholder="Your HNT Address" aria-describedby="sizing-addon1">
+          </div>
+        </div>
+      </div>
+      <div id="loading" class="row text-center">
+        <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+        <p><small>Loading</small></p>
+      </div>
+      <div id="loaded" class="row">
+        <div class="col text-center">
+          <small>20/21 FY earnings were</small>
+          <h1 id="total-value" class="success">£0.00</h1>
+        </div>
+        <a class="btn btn-default" href="#" id="show-csv" role="button">Show raw CSV data</a>
+        <pre id="csv-results" style="display:none"></pre>
+      </div>
+      <div id="error" class="row">
+        <div class="alert alert-danger" role="alert">
+          Looks like something went wrong :/.
+        
+          Did I mention I threw this together in an afternoon...
+        </div>
+      </div>
+      <div class="row">
+        <h4>FAQ</h4>
+        <h5>How are these numbers calculated?</h5>
+        The daily HNT/GBP price is fetched from <a href="https://www.coingecko.com/api/documentations/v3">Coin Gecko</a>, and then the HNT earnings for the provided address pulled from the official <a href="https://docs.helium.com/api/blockchain/introduction/">Helium API</a>. The number of tokens mined/added in a day is then multiplied by the daily value.
+        <h5>Why don't you have fancy charts & visualizations</h5>
+        <p>The helium team has done a great job of that with the helium explorer. This only exists to keep HMRC off your back.</p>
+        <h5>Can i scrape your site?</h5>
+        <p>I'd rather you didn't, but there is nothing stopping you if you want to. However, If you are sophisticated enough to do that you could probably do all of this yourself without much effort</p>
+        <h5>How can we support you?</h5>
+        <p>Happy to accept HNT donations at <code>foo</code></p>
+        <h5>How can we contact you?</h5>
+        <p>Follow me on <a href="https://twitter.com/veritech">Twitter</a></p>
       </div>
     </div>
   </body>
