@@ -1,15 +1,22 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
+	// "github.com/heroku/x/hmetrics/onload"
+	"github.com/memcachier/mc"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/gin-gonic/gin"
-	_ "github.com/heroku/x/hmetrics/onload"
 )
 
 func main() {
+	username := os.Getenv("MEMCACHIER_USERNAME")
+	password := os.Getenv("MEMCACHIER_PASSWORD")
+	server := os.Getenv("MEMCACHIER_SERVERS")
+
+	cache := mc.NewMC(server, username, password)
+	defer cache.Quit()
+
 	port := os.Getenv("PORT")
 
 	if port == "" {
@@ -25,7 +32,7 @@ func main() {
 		address := c.Param("address")
 
 		c.JSON(http.StatusOK, gin.H{
-			"data": getDataByAddress(address),
+			"data": getDataByAddress(address, cache),
 		})
 	})
 

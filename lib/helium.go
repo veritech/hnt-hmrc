@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/memcachier/mc"
 	"log"
 	"strings"
 	"time"
@@ -47,10 +48,10 @@ func (n *RewardTime) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
-func fetchHotspots(address string) []Hotspot {
+func fetchHotspots(address string, cache *mc.Client) []Hotspot {
 	url := fmt.Sprintf("https://api.helium.io/v1/accounts/%s/hotspots", address)
 
-	response := fetchUrl(url)
+	response := fetchUrl(url, cache)
 
 	hotspots := AccountHotspotsResponse{}
 
@@ -59,14 +60,14 @@ func fetchHotspots(address string) []Hotspot {
 	return hotspots.Data
 }
 
-func fetchRewards(address string, cursor string) ([]Reward, string) {
+func fetchRewards(address string, cursor string, cache *mc.Client) ([]Reward, string) {
 	format := "2006-01-01"
-	start := time.Date(2020, 9, 1, 0, 0, 0, 0, time.UTC).Format(format)
-	end := time.Now().Format(format)
+	start := time.Date(2020, 4, 6, 0, 0, 0, 0, time.UTC).Format(format)
+	end := time.Date(2021, 4, 5, 0, 0, 0, 0, time.UTC).Format(format)
 
 	url := fmt.Sprintf("https://api.helium.io/v1/hotspots/%s/rewards?max_time=%s&min_time=%s&cursor=%s", address, end, start, cursor)
 
-	response := fetchUrl(url)
+	response := fetchUrl(url, cache)
 
 	rewardResponse := HotspotRewardsRewards{}
 
@@ -75,14 +76,14 @@ func fetchRewards(address string, cursor string) ([]Reward, string) {
 	return rewardResponse.Data, rewardResponse.Cursor
 }
 
-func fetchAllRewards(address string) []Reward {
+func fetchAllRewards(address string, cache *mc.Client) []Reward {
 	var allRewards []Reward
 
 	var stop bool = false
 	var nextCursor string = ""
 
 	for !stop {
-		rewards, cursor := fetchRewards(address, nextCursor)
+		rewards, cursor := fetchRewards(address, nextCursor, cache)
 
 		stop = cursor == ""
 		nextCursor = cursor
@@ -94,12 +95,12 @@ func fetchAllRewards(address string) []Reward {
 	return allRewards
 }
 
-func fetchAllRewardsForAllHotspots(address string) []Reward {
-	hotspots := fetchHotspots(address)
+func fetchAllRewardsForAllHotspots(address string, cache *mc.Client) []Reward {
+	hotspots := fetchHotspots(address, cache)
 	var allRewards []Reward
 
 	for _, item := range hotspots {
-		rewards := fetchAllRewards(item.Address)
+		rewards := fetchAllRewards(item.Address, cache)
 
 		allRewards = append(allRewards, rewards...)
 	}
@@ -107,8 +108,8 @@ func fetchAllRewardsForAllHotspots(address string) []Reward {
 	return allRewards
 }
 
-func rewardsByDay(address string) EarningsByDay {
-	allRewards := fetchAllRewardsForAllHotspots(address)
+func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
+	allRewards := fetchAllRewardsForAllHotspots(address, cache)
 
 	earnings := make(EarningsByDay)
 
