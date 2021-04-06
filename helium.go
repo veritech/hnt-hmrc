@@ -62,7 +62,7 @@ func fetchHotspots(address string, cache *mc.Client) []Hotspot {
 
 func fetchRewards(address string, cursor string, cache *mc.Client) ([]Reward, string) {
 	format := "2006-01-01"
-	tz := time.LoadLocation("Europe/London")
+	tz, _ := time.LoadLocation("Europe/London")
 	start := time.Date(2020, 4, 6, 0, 0, 0, 0, tz).Format(format)
 	end := time.Date(2021, 4, 5, 23, 59, 59, 999, tz).Format(format)
 
