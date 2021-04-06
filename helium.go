@@ -62,8 +62,9 @@ func fetchHotspots(address string, cache *mc.Client) []Hotspot {
 
 func fetchRewards(address string, cursor string, cache *mc.Client) ([]Reward, string) {
 	format := "2006-01-01"
-	start := time.Date(2020, 4, 6, 0, 0, 0, 0, time.UTC).Format(format)
-	end := time.Date(2021, 4, 5, 0, 0, 0, 0, time.UTC).Format(format)
+	tz := time.LoadLocation("Europe/London")
+	start := time.Date(2020, 4, 6, 0, 0, 0, 0, tz).Format(format)
+	end := time.Date(2021, 4, 5, 23, 59, 59, 999, tz).Format(format)
 
 	url := fmt.Sprintf("https://api.helium.io/v1/hotspots/%s/rewards?max_time=%s&min_time=%s&cursor=%s", address, end, start, cursor)
 
