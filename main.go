@@ -3,11 +3,12 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	// "github.com/heroku/x/hmetrics/onload"
+	"github.com/garfield-yin/gin-error-handler"
 	"github.com/memcachier/mc"
+	"io"
 	"log"
 	"net/http"
 	"os"
-	"github.com/garfield-yin/gin-error-handler"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 	server := os.Getenv("MEMCACHIER_SERVERS")
 
 	var errWriter io.Writer = os.Stderr
-	
+
 	cache := mc.NewMC(server, username, password)
 	defer cache.Quit()
 
