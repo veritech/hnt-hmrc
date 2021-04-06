@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"github.com/garfield-yin/gin-error-handler"
 )
 
 func main() {
@@ -14,6 +15,8 @@ func main() {
 	password := os.Getenv("MEMCACHIER_PASSWORD")
 	server := os.Getenv("MEMCACHIER_SERVERS")
 
+	var errWriter io.Writer = os.Stderr
+	
 	cache := mc.NewMC(server, username, password)
 	defer cache.Quit()
 
@@ -25,6 +28,7 @@ func main() {
 
 	router := gin.New()
 	router.Use(gin.Logger())
+	router.Use(ginerror.ErrorHandle(errWriter))
 	router.LoadHTMLGlob("templates/*.tmpl.html")
 	router.Static("/static", "static")
 
