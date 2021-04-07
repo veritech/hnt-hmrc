@@ -39,7 +39,7 @@ func (n *RewardTime) UnmarshalJSON(buf []byte) error {
 	
 	fmt.Println("RewardTime " + value)
 	parsedDate, err := time.Parse(time.RFC3339Nano, value)
-	fmt.Println("Parsed " + parsedDate)
+	fmt.Println("Parsed " + parsedDate.String())
 	fmt.Println("============")
 	if err != nil {
 		log.Println("Date parser", err)
