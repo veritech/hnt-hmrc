@@ -36,8 +36,11 @@ type HotspotRewardsRewards struct {
 
 func (n *RewardTime) UnmarshalJSON(buf []byte) error {
 	value := strings.Trim(string(buf), "\"")
-
-	parsedDate, err := time.Parse(time.RFC3339, value)
+	
+	fmt.Println("RewardTime " + value)
+	parsedDate, err := time.Parse(time.RFC3339Nano, value)
+	fmt.Println("Parsed " + parsedDate)
+	fmt.Println("============")
 	if err != nil {
 		log.Println("Date parser", err)
 		return err
@@ -126,7 +129,9 @@ func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
 	}
 	
 	fmt.Printf("Rewards %+v", allRewards)
+	fmt.Println("")
 	fmt.Printf("Earnings %+v", earnings)
+	fmt.Println("")
 
 	return earnings
 }
