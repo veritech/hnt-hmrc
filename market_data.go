@@ -56,7 +56,7 @@ func convert(tuples []PriceTimeTuple) PricesBytime {
 
 func getMarketData(cache *mc.Client) PricesBytime {
 	// April 5th to April 6th
-	url := "https://api.coingecko.com/api/v3/coins/helium/market_chart/range?vs_currency=GBP&from=1586127600&to=1617663600"
+	url := "https://api.coingecko.com/api/v3/coins/helium/market_chart/range?vs_currency=GBP&from=1586127600&to=1617663599"
 
 	response := fetchUrl(url, cache)
 
