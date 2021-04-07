@@ -114,7 +114,7 @@ func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
 	allRewards := fetchAllRewardsForAllHotspots(address, cache)
 
 	earnings := make(EarningsByDay)
-
+	
 	for _, reward := range allRewards {
 		key := dateAtStartOfDay(time.Time(reward.Timestamp))
 
@@ -124,6 +124,9 @@ func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
 			earnings[key] = reward.Amount
 		}
 	}
+	
+	fmt.Printf("Rewards %+v", allRewards)
+	fmt.Printf("Earnings %+v", earnings)
 
 	return earnings
 }
