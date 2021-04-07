@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	// "github.com/heroku/x/hmetrics/onload"
-	"github.com/garfield-yin/gin-error-handler"
+// 	"github.com/garfield-yin/gin-error-handler"
 	"github.com/memcachier/mc"
 	"io"
 	"log"
@@ -16,7 +16,7 @@ func main() {
 	password := os.Getenv("MEMCACHIER_PASSWORD")
 	server := os.Getenv("MEMCACHIER_SERVERS")
 
-	var errWriter io.Writer = os.Stderr
+// 	var errWriter io.Writer = os.Stderr
 
 	cache := mc.NewMC(server, username, password)
 	defer cache.Quit()
@@ -29,7 +29,7 @@ func main() {
 
 	router := gin.New()
 	router.Use(gin.Logger())
-	router.Use(ginerror.ErrorHandle(errWriter))
+// 	router.Use(ginerror.ErrorHandle(errWriter))
 	router.LoadHTMLGlob("templates/*.tmpl.html")
 	router.Static("/static", "static")
 
