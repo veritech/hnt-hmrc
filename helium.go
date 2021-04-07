@@ -128,10 +128,10 @@ func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
 		}
 	}
 	
-	fmt.Printf("Rewards %+v", allRewards)
-	fmt.Println("")
-	fmt.Printf("Earnings %+v", earnings)
-	fmt.Println("")
+// 	fmt.Printf("Rewards %+v", allRewards)
+// 	fmt.Println("")
+// 	fmt.Printf("Earnings %+v", earnings)
+// 	fmt.Println("")
 
 	return earnings
 }
