@@ -83,6 +83,7 @@ func fetchAllRewards(address string, cache *mc.Client) []Reward {
 	var stop bool = false
 	var nextCursor string = ""
 
+	fmt.Println("fetching rewards")
 	for !stop {
 		rewards, cursor := fetchRewards(address, nextCursor, cache)
 
@@ -90,8 +91,8 @@ func fetchAllRewards(address string, cache *mc.Client) []Reward {
 		nextCursor = cursor
 
 		allRewards = append(allRewards, rewards...)
-		fmt.Println("fetched rewards")
 	}
+	fmt.Println("fetched rewards")
 
 	return allRewards
 }
