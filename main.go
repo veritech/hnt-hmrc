@@ -5,7 +5,7 @@ import (
 	// "github.com/heroku/x/hmetrics/onload"
 // 	"github.com/garfield-yin/gin-error-handler"
 	"github.com/memcachier/mc"
-	"io"
+// 	"io"
 	"log"
 	"net/http"
 	"os"
