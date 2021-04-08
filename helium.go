@@ -36,11 +36,8 @@ type HotspotRewardsRewards struct {
 
 func (n *RewardTime) UnmarshalJSON(buf []byte) error {
 	value := strings.Trim(string(buf), "\"")
-	
-	fmt.Println("RewardTime " + value)
+
 	parsedDate, err := time.Parse(time.RFC3339Nano, value)
-	fmt.Println("Parsed " + parsedDate.String())
-	fmt.Println("============")
 	if err != nil {
 		log.Println("Date parser", err)
 		return err
@@ -64,7 +61,7 @@ func fetchHotspots(address string, cache *mc.Client) []Hotspot {
 }
 
 func fetchRewards(address string, cursor string, cache *mc.Client) ([]Reward, string) {
-	format := "2006-01-01"
+	format := "2006-01-02"
 	tz, _ := time.LoadLocation("Europe/London")
 	start := time.Date(2020, 4, 6, 0, 0, 0, 0, tz).Format(format)
 	end := time.Date(2021, 4, 6, 0, 0, 0, 0, tz).Format(format)
@@ -117,7 +114,7 @@ func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
 	allRewards := fetchAllRewardsForAllHotspots(address, cache)
 
 	earnings := make(EarningsByDay)
-	
+
 	for _, reward := range allRewards {
 		key := dateAtStartOfDay(time.Time(reward.Timestamp))
 
@@ -127,11 +124,6 @@ func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
 			earnings[key] = reward.Amount
 		}
 	}
-	
-// 	fmt.Printf("Rewards %+v", allRewards)
-// 	fmt.Println("")
-// 	fmt.Printf("Earnings %+v", earnings)
-// 	fmt.Println("")
 
 	return earnings
 }

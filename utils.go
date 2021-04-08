@@ -93,9 +93,3 @@ func getDataByAddress(address string, cache *mc.Client) []DataPoint {
 
 	return data
 }
-
-// func getTestData() []DataPoint {
-//   address := "13eqa627iye9dhSkxqFdyM2mVWWWTmb71biqNQgVHg8rCk4M3Zt"
-//
-//   return getDataByAddress(address)
-// }
