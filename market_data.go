@@ -80,7 +80,7 @@ func getMarketData(cache *mc.Client, startTime time.Time, endTime time.Time) Pri
 	return hash
 }
 
-func getIdentifierBySymbolMap(cache *mc.Client) map[string]string {
+func getIdentifierBySymbolMap(cache *mc.Client) (map[string]string, map[string]bool) {
 	response := fetchUrl("https://api.coingecko.com/api/v3/coins/list", cache)
 
 	var coins []Coin
@@ -89,26 +89,31 @@ func getIdentifierBySymbolMap(cache *mc.Client) map[string]string {
 
 	identifierBySymbol := make(map[string]string)
 
+	boolByIdentifier := make(map[string]bool)
+
 	for _, coin := range coins {
-		// Skip this has it clashes with HNT
-		if coin.Identifier == "hymnode" ||
-			// This clashes with FTM
-			coin.Identifier == "fitmin" {
-			continue
-		}
+		boolByIdentifier[coin.Identifier] = true
 
 		identifierBySymbol[coin.Symbol] = coin.Identifier
 	}
 
-	return identifierBySymbol
+	return identifierBySymbol, boolByIdentifier
 }
 
-func getMarketPrice(ticker string, cache *mc.Client) (float64, error) {
+func getValidIdentifier(symbolOrIdentifier string, cache *mc.Client) string {
+	input := strings.ToLower(symbolOrIdentifier)
 
-	identiferBySymbol := getIdentifierBySymbolMap(cache)
+	identifierBySymbol, boolByIdentifier := getIdentifierBySymbolMap(cache)
 
-	identifier := identiferBySymbol[strings.ToLower(ticker)]
+	if _, ok := boolByIdentifier[input]; ok {
+		return input
+	}
 
+	return identifierBySymbol[input]
+}
+
+func getMarketPrice(tickerOrIdentifier string, cache *mc.Client) (float64, error) {
+	identifier := getValidIdentifier(tickerOrIdentifier, cache)
 	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=gbp", identifier)
 
 	response := fetchUrl(url, cache)
