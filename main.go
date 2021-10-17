@@ -80,9 +80,19 @@ func main() {
 	})
 
 	// Get the price of a token pair
-	router.GET("/price/:pair", func(c *gin.Context) {
+	router.GET("/price/:token", func(c *gin.Context) {
+		token := c.Param("token")
+
+		price, err := getMarketPrice(token, cache)
+
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": "Bad token provided",
+			})
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"price": 0,
+			"price": price,
 		})
 	})
 
