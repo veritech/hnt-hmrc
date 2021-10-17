@@ -68,6 +68,24 @@ func main() {
 		})
 	})
 
+	// Get the balance of a HNT wallet
+	router.GET("/balance/:address", func(c *gin.Context) {
+		address := c.Param("address")
+
+		balance := fetchBalance()
+
+		c.JSON(http.StatusOK, gin.H{
+			"balance": 0,
+		})
+	})
+
+	// Get the price of a token pair
+	router.GET("/price/:pair", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"price": 0,
+		})
+	})
+
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
 	})

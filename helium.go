@@ -34,6 +34,14 @@ type HotspotRewardsRewards struct {
 	Cursor string   `json:"cursor"`
 }
 
+type AddressData struct {
+	Balance int `json:balance`
+}
+
+type AddressResponse struct {
+	Data AddressData `json:data`
+}
+
 func (n *RewardTime) UnmarshalJSON(buf []byte) error {
 	value := strings.Trim(string(buf), "\"")
 
@@ -128,4 +136,16 @@ func rewardsByDay(address string, cache *mc.Client, startTime time.Time, endTime
 	}
 
 	return earnings
+}
+
+func fetchBalance(address string, cache *mc.Client) int {
+	url := fmt.Sprintf("https://api.helium.io/v1/accounts/%s", address)
+
+	response := fetchUrl(url, cache)
+
+	address := AddressResponse{}
+
+	json.Unmarshal(response, &address)
+
+	return address.Balance
 }
