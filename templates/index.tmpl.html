@@ -9,10 +9,24 @@
     </div>
     <div class="container">
       <div class="row">
+        <h4>Tax Year:</h4>
+        <label class="radio-inline">
+          <input type="radio" name="tax-year" value="2020">2020/2021
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="tax-year" value="2021" checked>2021/2022
+        </label>
+      </div>
+      <div class="row">
         <div class="col">
-          <div class="input-group input-group-lg">
-            <span class="input-group-addon" id="basic-addon1">Helium Address</span>
-            <input id="address" type="text" class="form-control" placeholder="Your HNT Address" aria-describedby="sizing-addon1">
+          <div class="form-group">
+            <div class="input-group input-group-lg">
+              <span class="input-group-addon" id="basic-addon1">Helium Address</span>
+              <input id="address" type="text" class="form-control" placeholder="Your HNT Address" aria-describedby="sizing-addon1">
+              <div class="input-group-btn">
+                <button id="submitBtn" class="btn btn-default" type="button">Submit</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -22,7 +36,7 @@
       </div>
       <div id="loaded" class="row">
         <div class="col text-center">
-          <small>2020/2021 FY earnings were</small>
+          <small>Earnings were</small>
           <h1 id="total-value" class="success">£0.00</h1>
         </div>
         <a class="btn btn-default" href="#" id="show-csv" role="button">Show raw CSV data</a>

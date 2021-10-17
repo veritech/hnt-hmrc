@@ -65,11 +65,11 @@ func dateAtStartOfDay(date time.Time) time.Time {
 	return key
 }
 
-func getDataByAddress(address string, cache *mc.Client) []DataPoint {
+func getDataByAddress(address string, cache *mc.Client, startTime time.Time, endTime time.Time) []DataPoint {
 	var data []DataPoint
 
-	priceData := getMarketData(cache)
-	earnings := rewardsByDay(address, cache)
+	priceData := getMarketData(cache, startTime, endTime)
+	earnings := rewardsByDay(address, cache, startTime, endTime)
 
 	for date, earnt := range earnings {
 		coinPrice := priceData[date]

@@ -52,17 +52,18 @@ $(function() {
     $("#csv-results").toggle();
   })
 
-  $("input#address").change(function(obj) {
+  $("#submitBtn").click(() => {
+    const taxYear = $("input[name=tax-year]:checked").val();
     const hntAddress = $("input#address").val();
 
-    if (hntAddress.length != 51) {
+    if (!hntAddress || hntAddress.length != 51) {
       setUIState(BAD_ADDRESS);
       return;
     }
 
     setUIState(LOADING);
 
-    $.getJSON("/data/" + hntAddress)
+    $.getJSON("/data/" + hntAddress + "?tax_year=" + taxYear)
       .done(function(response) {
         setUIState(LOADED);
 
