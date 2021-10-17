@@ -6,6 +6,7 @@ import (
 	"github.com/memcachier/mc"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -90,7 +91,9 @@ func getIdentifierBySymbolMap(cache *mc.Client) map[string]string {
 
 	for _, coin := range coins {
 		// Skip this has it clashes with HNT
-		if coin.Identifier == "hymnode" {
+		if coin.Identifier == "hymnode" ||
+			// This clashes with FTM
+			coin.Identifier == "fitmin" {
 			continue
 		}
 
@@ -104,7 +107,7 @@ func getMarketPrice(ticker string, cache *mc.Client) (float64, error) {
 
 	identiferBySymbol := getIdentifierBySymbolMap(cache)
 
-	identifier := identiferBySymbol[ticker]
+	identifier := identiferBySymbol[strings.ToLower(ticker)]
 
 	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=gbp", identifier)
 
