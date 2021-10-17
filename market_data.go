@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/memcachier/mc"
 	"strconv"
 	"time"
@@ -54,9 +55,12 @@ func convert(tuples []PriceTimeTuple) PricesBytime {
 	return hash
 }
 
-func getMarketData(cache *mc.Client) PricesBytime {
+func getMarketData(cache *mc.Client, startTime time.Time, endTime time.Time) PricesBytime {
 	// April 5th to April 6th
-	url := "https://api.coingecko.com/api/v3/coins/helium/market_chart/range?vs_currency=GBP&from=1586127600&to=1617663599"
+	url := fmt.Sprintf(
+		"https://api.coingecko.com/api/v3/coins/helium/market_chart/range?vs_currency=GBP&from=%d&to=%d",
+		startTime.Unix(),
+		endTime.Unix())
 
 	response := fetchUrl(url, cache)
 

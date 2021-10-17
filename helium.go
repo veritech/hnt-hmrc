@@ -60,13 +60,15 @@ func fetchHotspots(address string, cache *mc.Client) []Hotspot {
 	return hotspots.Data
 }
 
-func fetchRewards(address string, cursor string, cache *mc.Client) ([]Reward, string) {
+func fetchRewards(address string, cursor string, cache *mc.Client, startTime time.Time, endTime time.Time) ([]Reward, string) {
 	format := "2006-01-02"
-	tz, _ := time.LoadLocation("Europe/London")
-	start := time.Date(2020, 4, 6, 0, 0, 0, 0, tz).Format(format)
-	end := time.Date(2021, 4, 6, 0, 0, 0, 0, tz).Format(format)
 
-	url := fmt.Sprintf("https://api.helium.io/v1/hotspots/%s/rewards?max_time=%s&min_time=%s&cursor=%s", address, end, start, cursor)
+	url := fmt.Sprintf(
+		"https://api.helium.io/v1/hotspots/%s/rewards?max_time=%s&min_time=%s&cursor=%s",
+		address,
+		endTime.Format(format),
+		startTime.Format(format),
+		cursor)
 
 	response := fetchUrl(url, cache)
 
@@ -77,7 +79,7 @@ func fetchRewards(address string, cursor string, cache *mc.Client) ([]Reward, st
 	return rewardResponse.Data, rewardResponse.Cursor
 }
 
-func fetchAllRewards(address string, cache *mc.Client) []Reward {
+func fetchAllRewards(address string, cache *mc.Client, startTime time.Time, endTime time.Time) []Reward {
 	var allRewards []Reward
 
 	var stop bool = false
@@ -85,7 +87,7 @@ func fetchAllRewards(address string, cache *mc.Client) []Reward {
 
 	fmt.Println("fetching rewards")
 	for !stop {
-		rewards, cursor := fetchRewards(address, nextCursor, cache)
+		rewards, cursor := fetchRewards(address, nextCursor, cache, startTime, endTime)
 
 		stop = cursor == ""
 		nextCursor = cursor
@@ -97,12 +99,12 @@ func fetchAllRewards(address string, cache *mc.Client) []Reward {
 	return allRewards
 }
 
-func fetchAllRewardsForAllHotspots(address string, cache *mc.Client) []Reward {
+func fetchAllRewardsForAllHotspots(address string, cache *mc.Client, startTime time.Time, endTime time.Time) []Reward {
 	hotspots := fetchHotspots(address, cache)
 	var allRewards []Reward
 
 	for _, item := range hotspots {
-		rewards := fetchAllRewards(item.Address, cache)
+		rewards := fetchAllRewards(item.Address, cache, startTime, endTime)
 
 		allRewards = append(allRewards, rewards...)
 	}
@@ -110,8 +112,8 @@ func fetchAllRewardsForAllHotspots(address string, cache *mc.Client) []Reward {
 	return allRewards
 }
 
-func rewardsByDay(address string, cache *mc.Client) EarningsByDay {
-	allRewards := fetchAllRewardsForAllHotspots(address, cache)
+func rewardsByDay(address string, cache *mc.Client, startTime time.Time, endTime time.Time) EarningsByDay {
+	allRewards := fetchAllRewardsForAllHotspots(address, cache, startTime, endTime)
 
 	earnings := make(EarningsByDay)
 
