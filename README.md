@@ -1,48 +1,30 @@
+# HNT-HMRC
 
-# go-getting-started
+## Calcuate your UK income tax liability from Helium mining
 
-A barebones Go app, which can easily be deployed to Heroku.
+You can use this code by visiting the [site](https://hnt-hmrc.herokuapp.com)
 
-This application supports the [Getting Started with Go on Heroku](https://devcenter.heroku.com/articles/getting-started-with-go) article - check it out.
 
-## Running Locally
+### FAQ
+#### How does it work
+This project does the following
 
-Make sure you have [Go](http://golang.org/doc/install) version 1.12 or newer and the [Heroku Toolbelt](https://toolbelt.heroku.com/) installed.
+- Fetch all of the hotspots linked to a wallet
+- Compile their daily earnings in GBP (based on the HNT value on the day via Coingecko)
+- Provides a summary, as well as a CSV of the income
 
-```sh
-$ git clone https://github.com/heroku/go-getting-started.git
-$ cd go-getting-started
-$ go build -o bin/go-getting-started -v . # or `go build -o bin/go-getting-started.exe -v .` in git bash
-github.com/mattn/go-colorable
-gopkg.in/bluesuncorp/validator.v5
-golang.org/x/net/context
-github.com/heroku/x/hmetrics
-github.com/gin-gonic/gin/render
-github.com/manucorporat/sse
-github.com/heroku/x/hmetrics/onload
-github.com/gin-gonic/gin/binding
-github.com/gin-gonic/gin
-github.com/heroku/go-getting-started
-$ heroku local
+#### Why did you do this?
+I wrote this as week script for myself, and thought the community might find it useful
+
+#### How does it make money?
+It doesn't, thankfully it's hosted on heroku's free tier so it doesn't cost me anything to run. Donations are appreciated.
+
+#### Can I contribute?
+Code, sure! Create a PR and I'll take a look. This isn't my day job, so don't exact the best SLA
+
+### Running Locally
+
 ```
+go run .
+````
 
-Your app should now be running on [localhost:5000](http://localhost:5000/).
-
-## Deploying to Heroku
-
-```sh
-$ heroku create
-$ git push heroku main
-$ heroku open
-```
-
-or
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-
-## Documentation
-
-For more information about using Go on Heroku, see these Dev Center articles:
-
-- [Go on Heroku](https://devcenter.heroku.com/categories/go)
