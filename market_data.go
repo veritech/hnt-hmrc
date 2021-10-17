@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/memcachier/mc"
+	"log"
 	"strconv"
 	"time"
 )
@@ -21,6 +22,12 @@ type MarketChart struct {
 	Prices       []PriceTimeTuple `json:"prices"`
 	MarketCaps   []PriceTimeTuple `json:"market_caps"`
 	TotalVolumes []PriceTimeTuple `json:"total_volumes"`
+}
+
+type Coin struct {
+	Identifier string `json:"id"`
+	Symbol     string `json:"symbol"`
+	Name       string `json:"name"`
 }
 
 func (n *PriceTime) UnmarshalJSON(buf []byte) error {
@@ -56,7 +63,6 @@ func convert(tuples []PriceTimeTuple) PricesBytime {
 }
 
 func getMarketData(cache *mc.Client, startTime time.Time, endTime time.Time) PricesBytime {
-	// April 5th to April 6th
 	url := fmt.Sprintf(
 		"https://api.coingecko.com/api/v3/coins/helium/market_chart/range?vs_currency=GBP&from=%d&to=%d",
 		startTime.Unix(),
@@ -71,4 +77,53 @@ func getMarketData(cache *mc.Client, startTime time.Time, endTime time.Time) Pri
 	hash := convert(marketData.Prices)
 
 	return hash
+}
+
+func getIdentifierBySymbolMap(cache *mc.Client) map[string]string {
+	response := fetchUrl("https://api.coingecko.com/api/v3/coins/list", cache)
+
+	var coins []Coin
+
+	json.Unmarshal(response, &coins)
+
+	identifierBySymbol := make(map[string]string)
+
+	for _, coin := range coins {
+		// Skip this has it clashes with HNT
+		if coin.Identifier == "hymnode" {
+			continue
+		}
+
+		identifierBySymbol[coin.Symbol] = coin.Identifier
+	}
+
+	return identifierBySymbol
+}
+
+func getMarketPrice(ticker string, cache *mc.Client) (float64, error) {
+
+	identiferBySymbol := getIdentifierBySymbolMap(cache)
+
+	identifier := identiferBySymbol[ticker]
+
+	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=gbp", identifier)
+
+	response := fetchUrl(url, cache)
+
+	var rootObject map[string]json.RawMessage
+	rootObjectError := json.Unmarshal(response, &rootObject)
+
+	if rootObjectError != nil {
+		log.Println(rootObjectError)
+		return 0, rootObjectError
+	}
+
+	var currencyValue map[string]float64
+	currencyValueError := json.Unmarshal(rootObject[identifier], &currencyValue)
+	if currencyValueError != nil {
+		log.Println(currencyValueError)
+		return 0, currencyValueError
+	}
+
+	return currencyValue["gbp"], nil
 }
