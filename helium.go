@@ -138,14 +138,18 @@ func rewardsByDay(address string, cache *mc.Client, startTime time.Time, endTime
 	return earnings
 }
 
-func fetchBalance(address string, cache *mc.Client) int {
+func fetchBalance(address string, cache *mc.Client) float64 {
 	url := fmt.Sprintf("https://api.helium.io/v1/accounts/%s", address)
 
 	response := fetchUrl(url, cache)
 
-	address := AddressResponse{}
+	responseObject := AddressResponse{}
 
-	json.Unmarshal(response, &address)
+	json.Unmarshal(response, &responseObject)
 
-	return address.Balance
+	if responseObject.Data.Balance == 0 {
+		return 0
+	}
+
+	return float64(responseObject.Data.Balance) / 100000000
 }

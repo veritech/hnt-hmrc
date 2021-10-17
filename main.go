@@ -72,10 +72,10 @@ func main() {
 	router.GET("/balance/:address", func(c *gin.Context) {
 		address := c.Param("address")
 
-		balance := fetchBalance()
+		balance := fetchBalance(address, cache)
 
 		c.JSON(http.StatusOK, gin.H{
-			"balance": 0,
+			"balance": balance,
 		})
 	})
 
