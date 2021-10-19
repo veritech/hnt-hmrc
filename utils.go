@@ -26,18 +26,18 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 		return []byte(val)
 	}
 
-	client := http.Client{
-		Timeout: time.Second * 30,
-	}
+	client := http.Client{}
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		log.Println("Failed to create request")
 		log.Println(err)
 		return []byte{}
 	}
 
 	res, getErr := client.Do(req)
 	if getErr != nil {
+		log.Println("Request failed")
 		log.Println(getErr)
 		return []byte{}
 	}
@@ -48,6 +48,7 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
+		log.Println("Failed to extract response")
 		log.Println(readErr)
 		return []byte{}
 	}
