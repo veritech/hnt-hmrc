@@ -40,6 +40,45 @@ function setUIState(state) {
   }
 }
 
+function parseData(response) {
+          // Generate CSV
+        const header = "date, earnings, tokens mined, daily price\n";
+        const csv = response
+          .data
+          .map((o) => {
+            return o.date + "," + o.earnings + "," + o.tokens + "," + o.price + "\n";
+          })
+          .reduce((sum, value) => sum + value);
+
+        $("#csv-results").text(header + csv);
+
+        // Calculate total value
+        const totalEarnings = response
+          .data
+          .map((x) => x.earnings)
+          .reduce((sum, value) => sum + value);
+
+        $("#total-value").text(formatter.format(totalEarnings));
+}
+
+function pollForData() {
+   $.getJSON("/data/" + hntAddress + "?tax_year=" + taxYear)
+      .done(function(response) {    
+        { data } = response;
+     
+        if (!data) {
+          setTimeout(pollForData, 10000);
+          return;
+        }
+     
+        setUIState(LOADED);
+        parseData(response)
+      })
+      .fail(function(data) {
+        setUIState(FAILED);
+      });
+}
+
 const formatter = new Intl.NumberFormat('en-GB', {
   style: 'currency',
   currency: 'GBP'
@@ -62,32 +101,11 @@ $(function() {
     }
 
     setUIState(LOADING);
-
-    $.getJSON("/data/" + hntAddress + "?tax_year=" + taxYear)
+    
+    // enqueue the request
+    $.getJSON("/enqueue/" + hntAddress + "?tax_year=" + taxYear)
       .done(function(response) {
-        setUIState(LOADED);
-
-        // Generate CSV
-        const header = "date, earnings, tokens mined, daily price\n";
-        const csv = response
-          .data
-          .map((o) => {
-            return o.date + "," + o.earnings + "," + o.tokens + "," + o.price + "\n";
-          })
-          .reduce((sum, value) => sum + value);
-
-        $("#csv-results").text(header + csv);
-
-        // Calculate total value
-        const totalEarnings = response
-          .data
-          .map((x) => x.earnings)
-          .reduce((sum, value) => sum + value);
-
-        $("#total-value").text(formatter.format(totalEarnings));
-      })
-      .fail(function(data) {
-        setUIState(FAILED);
-      });
+         pollForData()
+    });  
   });
 })
