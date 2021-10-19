@@ -27,7 +27,7 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 	}
 
 	client := http.Client{
-		Timeout: time.Second * 10,
+		Timeout: time.Second * 30,
 	}
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
