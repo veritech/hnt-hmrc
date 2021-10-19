@@ -32,12 +32,14 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return []byte{}
 	}
 
 	res, getErr := client.Do(req)
 	if getErr != nil {
-		log.Fatal(getErr)
+		log.Println(getErr)
+		return []byte{}
 	}
 
 	if res.Body != nil {
@@ -46,7 +48,8 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
-		log.Fatal(readErr)
+		log.Println(readErr)
+		return []byte{}
 	}
 
 	_, cacheWriteErr := cache.Set(url, string(body), 0, 86400, 0)
