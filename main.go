@@ -28,6 +28,10 @@ func parseTaxYear(taxYear string) (int, error) {
 	return value, nil
 }
 
+func cacheKey(address string, taxYear int) string {
+	return fmt.Sprintf("%s-%d", address, taxYear)
+}
+
 func main() {
 	username := os.Getenv("MEMCACHIER_USERNAME")
 	password := os.Getenv("MEMCACHIER_PASSWORD")
@@ -48,24 +52,50 @@ func main() {
 	router.LoadHTMLGlob("templates/*.tmpl.html")
 	router.Static("/static", "static")
 
-	router.GET("/data/:address", func(c *gin.Context) {
+	// enqueue a job
+	router.GET("/enqueue/:address", func(c *gin.Context) {
 		address := c.Param("address")
 		taxYear, taxYearParseError := parseTaxYear(c.Query("tax_year"))
 
 		if taxYearParseError != nil {
-			c.JSON(400, gin.H{
+			c.AbortWithStatusJSON(400, gin.H{
 				"error": "Invalid year provided",
 			})
 			return
 		}
+		
+		// return early
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{
+			"enqueued": true,
+		})
 
 		tz, _ := time.LoadLocation("Europe/London")
 		start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
 		end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
 
+		data := getDataByAddress(address, cache, start, end)
+		
+		cas, err := cache.Set(cacheKey(address, taxYear), data, nil, 60, nil)
+		if err != nil {
+			log.Println("error generating data")
+		}
+	})
+	
+	// get the data
+	router.GET("/data/:address", func(c *gin.Context) {
+		address := c.Param("address")
+		taxYear, taxYearParseError := parseTaxYear(c.Query("tax_year"))
+		
+		dataKey := cacheKey(address, taxYear)
+		data := cache.Get(dataKey)
+
 		c.JSON(http.StatusOK, gin.H{
-			"data": getDataByAddress(address, cache, start, end),
+			"data": data,
 		})
+		
+		if data != nil {
+			cache.Del(dataKey)
+		}
 	})
 
 	// Get the balance of a HNT wallet
