@@ -52,7 +52,7 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 		return []byte{}
 	}
 
-	_, cacheWriteErr := cache.Set(url, string(body), 0, 86400, 0)
+	_, cacheWriteErr := cache.Set(url, string(body), 0, 600, 0)
 	if cacheWriteErr != nil {
 		log.Printf("Failed to cache %s", url)
 	}
