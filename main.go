@@ -6,6 +6,7 @@ import (
 	// 	"github.com/garfield-yin/gin-error-handler"
 	"github.com/memcachier/mc"
 	// 	"io"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -58,44 +59,53 @@ func main() {
 		taxYear, taxYearParseError := parseTaxYear(c.Query("tax_year"))
 
 		if taxYearParseError != nil {
-			c.AbortWithStatusJSON(400, gin.H{
+			c.JSON(400, gin.H{
 				"error": "Invalid year provided",
 			})
+			c.Abort()
 			return
 		}
-		
+
 		// return early
-		c.AbortWithStatusJSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"enqueued": true,
 		})
+
+		c.Abort()
 
 		tz, _ := time.LoadLocation("Europe/London")
 		start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
 		end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
 
 		data := getDataByAddress(address, cache, start, end)
-		
-		cas, err := cache.Set(cacheKey(address, taxYear), data, nil, 60, nil)
+
+		jsonData, _ := json.Marshal(data)
+
+		_, err := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, 600, 0)
 		if err != nil {
-			log.Println("error generating data")
+			log.Printf("error generating data %s", err)
 		}
 	})
-	
+
 	// get the data
 	router.GET("/data/:address", func(c *gin.Context) {
 		address := c.Param("address")
-		taxYear, taxYearParseError := parseTaxYear(c.Query("tax_year"))
-		
-		dataKey := cacheKey(address, taxYear)
-		data := cache.Get(dataKey)
+		taxYear, _ := parseTaxYear(c.Query("tax_year"))
 
-		c.JSON(http.StatusOK, gin.H{
-			"data": data,
-		})
-		
-		if data != nil {
+		dataKey := cacheKey(address, taxYear)
+		jsonData, _, _, err := cache.Get(dataKey)
+
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"data": jsonData,
+			})
 			cache.Del(dataKey)
+		} else {
+			c.JSON(425, gin.H{
+				"data": nil,
+			})
 		}
+
 	})
 
 	// Get the balance of a HNT wallet

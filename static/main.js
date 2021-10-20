@@ -61,13 +61,12 @@ function parseData(response) {
         $("#total-value").text(formatter.format(totalEarnings));
 }
 
-function pollForData() {
+function pollForData(hntAddress, taxYear) {
    $.getJSON("/data/" + hntAddress + "?tax_year=" + taxYear)
-      .done(function(response) {    
-        { data } = response;
-     
-        if (!data) {
-          setTimeout(pollForData, 10000);
+      .done(function(response) {
+        console.log(response);
+        if (!response.data) {
+          setTimeout(() => pollForData(hntAddress, taxYear), 10000);
           return;
         }
      
@@ -105,7 +104,7 @@ $(function() {
     // enqueue the request
     $.getJSON("/enqueue/" + hntAddress + "?tax_year=" + taxYear)
       .done(function(response) {
-         pollForData()
+         pollForData(hntAddress, taxYear)
     });  
   });
 })
