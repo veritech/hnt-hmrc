@@ -93,6 +93,7 @@ func main() {
 		// return early
 		c.Abort()
 
+		// Fetch the data async
 		go fetchData(address, taxYear, cache)
 	})
 
@@ -110,23 +111,25 @@ func main() {
 		}
 
 		dataKey := cacheKey(address, taxYear)
-		cachedData, _, _, err := cache.Get(dataKey)
+		cachedData, _, _, cacheReadErr := cache.Get(dataKey)
 
-		if err != nil {
-			log.Printf("Cache data found")
-			var data []DataPoint
-			json.Unmarshal([]byte(cachedData), &data)
-
-			c.JSON(http.StatusOK, gin.H{
-				"data": data,
-			})
-			cache.Del(dataKey)
-		} else {
-			log.Printf("Cache error %s", err)
+		if cacheReadErr != nil {
+			log.Printf("Cache error %s", cacheReadErr)
 			c.JSON(425, gin.H{
 				"data": nil,
 			})
+			c.Abort()
+			return
 		}
+
+		log.Printf("Cache data found")
+		var data []DataPoint
+		json.Unmarshal([]byte(cachedData), &data)
+
+		c.JSON(http.StatusOK, gin.H{
+			"data": data,
+		})
+		cache.Del(dataKey)
 	})
 
 	// Get the balance of a HNT wallet
