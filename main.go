@@ -33,6 +33,27 @@ func cacheKey(address string, taxYear int) string {
 	return fmt.Sprintf("%s-%d", address, taxYear)
 }
 
+func fetchData(address string, taxYear int, cache *mc.Client) {
+	tz, _ := time.LoadLocation("Europe/London")
+	start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
+	end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
+
+	log.Printf("Fetching data %s", address)
+	data := getDataByAddress(address, cache, start, end)
+
+	jsonData, err := json.Marshal(data)
+
+	if err != nil {
+		log.Printf("Failed to serialize JSON for cache")
+	}
+
+	log.Printf("Attempting to caching data")
+	_, cacheError := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, 600, 0)
+	if cacheError != nil {
+		log.Printf("Cache failure %s", cacheError)
+	}
+}
+
 func main() {
 	username := os.Getenv("MEMCACHIER_USERNAME")
 	password := os.Getenv("MEMCACHIER_PASSWORD")
@@ -66,46 +87,46 @@ func main() {
 			return
 		}
 
-		// return early
 		c.JSON(http.StatusOK, gin.H{
 			"enqueued": true,
 		})
-
+		// return early
 		c.Abort()
 
-		tz, _ := time.LoadLocation("Europe/London")
-		start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
-		end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
-
-		data := getDataByAddress(address, cache, start, end)
-
-		jsonData, _ := json.Marshal(data)
-
-		_, err := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, 600, 0)
-		if err != nil {
-			log.Printf("error generating data %s", err)
-		}
+		go fetchData(address, taxYear, cache)
 	})
 
 	// get the data
 	router.GET("/data/:address", func(c *gin.Context) {
 		address := c.Param("address")
-		taxYear, _ := parseTaxYear(c.Query("tax_year"))
+		taxYear, taxYearParseError := parseTaxYear(c.Query("tax_year"))
+
+		if taxYearParseError != nil {
+			c.JSON(400, gin.H{
+				"error": "Invalid year provided",
+			})
+			c.Abort()
+			return
+		}
 
 		dataKey := cacheKey(address, taxYear)
-		jsonData, _, _, err := cache.Get(dataKey)
+		cachedData, _, _, err := cache.Get(dataKey)
 
 		if err != nil {
+			log.Printf("Cache data found")
+			var data []DataPoint
+			json.Unmarshal([]byte(cachedData), &data)
+
 			c.JSON(http.StatusOK, gin.H{
-				"data": jsonData,
+				"data": data,
 			})
 			cache.Del(dataKey)
 		} else {
+			log.Printf("Cache error %s", err)
 			c.JSON(425, gin.H{
 				"data": nil,
 			})
 		}
-
 	})
 
 	// Get the balance of a HNT wallet
