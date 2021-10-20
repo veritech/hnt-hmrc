@@ -64,16 +64,17 @@ function parseData(response) {
 function pollForData(hntAddress, taxYear) {
    $.getJSON("/data/" + hntAddress + "?tax_year=" + taxYear)
       .done(function(response) {
-        console.log(response);
-        if (!response.data) {
-          setTimeout(() => pollForData(hntAddress, taxYear), 10000);
-          return;
-        }
-     
         setUIState(LOADED);
         parseData(response)
       })
-      .fail(function(data) {
+      .fail(function(jqxhr, textStatus, error) {
+        // Server is not ready yet, and we should retry
+        if (jqxhr.status == 425) {
+          console.log("Waiting for data");
+          setTimeout(() => pollForData(hntAddress, taxYear), 10000);
+          return;
+        }
+        
         setUIState(FAILED);
       });
 }
