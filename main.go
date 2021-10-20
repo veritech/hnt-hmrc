@@ -11,48 +11,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 )
 
-func parseTaxYear(taxYear string) (int, error) {
-	value, err := strconv.Atoi(taxYear)
-
-	if err != nil {
-		return 0, err
-	}
-
-	if value < 2020 || value > 2023 {
-		return 0, fmt.Errorf("%d is not a supported tax year", value)
-	}
-
-	return value, nil
-}
-
-func cacheKey(address string, taxYear int) string {
-	return fmt.Sprintf("%s-%d", address, taxYear)
-}
-
-func fetchData(address string, taxYear int, cache *mc.Client) {
-	tz, _ := time.LoadLocation("Europe/London")
-	start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
-	end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
-
-	log.Printf("Fetching data %s", address)
-	data := getDataByAddress(address, cache, start, end)
-
-	jsonData, err := json.Marshal(data)
-
-	if err != nil {
-		log.Printf("Failed to serialize JSON for cache")
-	}
-
-	log.Printf("Attempting to caching data")
-	_, cacheError := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, 600, 0)
-	if cacheError != nil {
-		log.Printf("Cache failure %s", cacheError)
-	}
-}
+const RESULT_CACHE_TTL = 600
+const URL_CACHE_TTL = 60
 
 func main() {
 	username := os.Getenv("MEMCACHIER_USERNAME")
@@ -129,7 +91,6 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"data": data,
 		})
-		cache.Del(dataKey)
 	})
 
 	// Get the balance of a HNT wallet
