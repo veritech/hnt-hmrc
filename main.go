@@ -54,8 +54,18 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"enqueued": true,
 		})
+
 		// return early
 		c.Abort()
+
+		// Do we have cached data for this request?
+		dataKey := cacheKey(address, taxYear)
+		_, _, _, cacheReadErr := cache.Get(dataKey)
+
+		if cacheReadErr == nil {
+			fmt.Println("Cached hit, skipping processing")
+			return
+		}
 
 		// Fetch the data async
 		go fetchData(address, taxYear, cache)

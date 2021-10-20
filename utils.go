@@ -133,7 +133,7 @@ func fetchData(address string, taxYear int, cache *mc.Client) {
 		log.Printf("Failed to serialize JSON for cache %s", cacheKey(address, taxYear))
 	}
 
-	log.Printf("Attempting to caching data %d", len(data))
+	log.Printf("Attempting to cache data %d", len(data))
 	_, cacheError := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, RESULT_CACHE_TTL, 0)
 	if cacheError != nil {
 		log.Printf("Cache failure %s %s", cacheKey(address, taxYear), cacheError)
