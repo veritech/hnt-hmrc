@@ -6,6 +6,7 @@ import (
 	// 	"github.com/garfield-yin/gin-error-handler"
 	"github.com/memcachier/mc"
 	// 	"io"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,6 +29,10 @@ func parseTaxYear(taxYear string) (int, error) {
 	return value, nil
 }
 
+func cacheKey(address string, taxYear int) string {
+	return fmt.Sprintf("%s-%d", address, taxYear)
+}
+
 func main() {
 	username := os.Getenv("MEMCACHIER_USERNAME")
 	password := os.Getenv("MEMCACHIER_PASSWORD")
@@ -48,7 +53,8 @@ func main() {
 	router.LoadHTMLGlob("templates/*.tmpl.html")
 	router.Static("/static", "static")
 
-	router.GET("/data/:address", func(c *gin.Context) {
+	// enqueue a job
+	router.GET("/enqueue/:address", func(c *gin.Context) {
 		address := c.Param("address")
 		taxYear, taxYearParseError := parseTaxYear(c.Query("tax_year"))
 
@@ -56,16 +62,50 @@ func main() {
 			c.JSON(400, gin.H{
 				"error": "Invalid year provided",
 			})
+			c.Abort()
 			return
 		}
+
+		// return early
+		c.JSON(http.StatusOK, gin.H{
+			"enqueued": true,
+		})
+
+		c.Abort()
 
 		tz, _ := time.LoadLocation("Europe/London")
 		start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
 		end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
 
-		c.JSON(http.StatusOK, gin.H{
-			"data": getDataByAddress(address, cache, start, end),
-		})
+		data := getDataByAddress(address, cache, start, end)
+
+		jsonData, _ := json.Marshal(data)
+
+		_, err := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, 600, 0)
+		if err != nil {
+			log.Printf("error generating data %s", err)
+		}
+	})
+
+	// get the data
+	router.GET("/data/:address", func(c *gin.Context) {
+		address := c.Param("address")
+		taxYear, _ := parseTaxYear(c.Query("tax_year"))
+
+		dataKey := cacheKey(address, taxYear)
+		jsonData, _, _, err := cache.Get(dataKey)
+
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"data": jsonData,
+			})
+			cache.Del(dataKey)
+		} else {
+			c.JSON(425, gin.H{
+				"data": nil,
+			})
+		}
+
 	})
 
 	// Get the balance of a HNT wallet
