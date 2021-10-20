@@ -15,6 +15,8 @@ import (
 
 const RESULT_CACHE_TTL = 600
 const URL_CACHE_TTL = 60
+const MAX_YEAR = 2023
+const MIN_YEAR = 2020
 
 func main() {
 	username := os.Getenv("MEMCACHIER_USERNAME")

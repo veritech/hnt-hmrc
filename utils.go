@@ -79,7 +79,7 @@ func parseTaxYear(taxYear string) (int, error) {
 		return 0, err
 	}
 
-	if value < 2020 || value > 2023 {
+	if value < MIN_YEAR || value > MAX_YEAR {
 		return 0, fmt.Errorf("%d is not a supported tax year", value)
 	}
 
