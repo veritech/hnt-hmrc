@@ -21,11 +21,14 @@ type DataPoint struct {
 }
 
 func fetchUrl(url string, cache *mc.Client) []byte {
+	return fetchUrlWithRetry(url, cache, false)
+}
 
+func fetchUrlWithRetry(url string, cache *mc.Client, isRetry bool) []byte {
 	val, _, _, cacheReadErr := cache.Get(url)
 	if cacheReadErr != nil {
-		log.Printf("Cache Miss: %s", url)
 	} else {
+		log.Printf("Cache Hit: %s", url)
 		return []byte(val)
 	}
 
@@ -45,6 +48,13 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 		return []byte{}
 	}
 
+	log.Printf("%d - %s\n", res.StatusCode, url)
+	if res.StatusCode != 200 && isRetry == false {
+		log.Println("Retrying in 2 sec")
+		time.Sleep(2 * time.Second)
+		return fetchUrlWithRetry(url, cache, true)
+	}
+
 	if res.Body != nil {
 		defer res.Body.Close()
 	}
@@ -58,7 +68,7 @@ func fetchUrl(url string, cache *mc.Client) []byte {
 
 	_, cacheWriteErr := cache.Set(url, string(body), 0, URL_CACHE_TTL, 0)
 	if cacheWriteErr != nil {
-		log.Printf("Failed to cache %s", url)
+		log.Printf("Failed to cache %s\n", url)
 	}
 
 	return body
@@ -87,7 +97,7 @@ func parseTaxYear(taxYear string) (int, error) {
 }
 
 func cacheKey(address string, taxYear int) string {
-	return fmt.Sprintf("%s-%d", address, taxYear)
+	return fmt.Sprintf("sdsdd-%s-%d", address, taxYear)
 }
 
 func getDataByAddress(address string, cache *mc.Client, startTime time.Time, endTime time.Time) []DataPoint {
@@ -124,7 +134,7 @@ func fetchData(address string, taxYear int, cache *mc.Client) {
 	start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
 	end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
 
-	log.Printf("Fetching data %s", cacheKey(address, taxYear))
+	log.Printf("Fetching data ... %s\n", cacheKey(address, taxYear))
 	data := getDataByAddress(address, cache, start, end)
 
 	jsonData, err := json.Marshal(data)
@@ -133,7 +143,6 @@ func fetchData(address string, taxYear int, cache *mc.Client) {
 		log.Printf("Failed to serialize JSON for cache %s", cacheKey(address, taxYear))
 	}
 
-	log.Printf("Attempting to cache data %d", len(data))
 	_, cacheError := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, RESULT_CACHE_TTL, 0)
 	if cacheError != nil {
 		log.Printf("Cache failure %s %s", cacheKey(address, taxYear), cacheError)
