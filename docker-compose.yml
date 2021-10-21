@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  memcached:
+    image: docker.io/bitnami/memcached:1
+    environment:
+      - MEMCACHED_USERNAME=user
+      - MEMCACHED_PASSWORD=password
+      - MEMCACHED_CACHE_SIZE=26
+    ports:
+      - '11211:11211'

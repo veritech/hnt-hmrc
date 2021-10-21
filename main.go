@@ -11,48 +11,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 )
 
-func parseTaxYear(taxYear string) (int, error) {
-	value, err := strconv.Atoi(taxYear)
-
-	if err != nil {
-		return 0, err
-	}
-
-	if value < 2020 || value > 2023 {
-		return 0, fmt.Errorf("%d is not a supported tax year", value)
-	}
-
-	return value, nil
-}
-
-func cacheKey(address string, taxYear int) string {
-	return fmt.Sprintf("%s-%d", address, taxYear)
-}
-
-func fetchData(address string, taxYear int, cache *mc.Client) {
-	tz, _ := time.LoadLocation("Europe/London")
-	start := time.Date(taxYear, 4, 6, 0, 0, 0, 0, tz)
-	end := time.Date(taxYear+1, 4, 6, 0, 0, 0, 0, tz)
-
-	log.Printf("Fetching data %s", address)
-	data := getDataByAddress(address, cache, start, end)
-
-	jsonData, err := json.Marshal(data)
-
-	if err != nil {
-		log.Printf("Failed to serialize JSON for cache")
-	}
-
-	log.Printf("Attempting to caching data")
-	_, cacheError := cache.Set(cacheKey(address, taxYear), string(jsonData), 0, 600, 0)
-	if cacheError != nil {
-		log.Printf("Cache failure %s", cacheError)
-	}
-}
+const RESULT_CACHE_TTL = 600
+const URL_CACHE_TTL = 60
+const MAX_YEAR = 2023
+const MIN_YEAR = 2020
 
 func main() {
 	username := os.Getenv("MEMCACHIER_USERNAME")
@@ -90,9 +54,20 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"enqueued": true,
 		})
+
 		// return early
 		c.Abort()
 
+		// Do we have cached data for this request?
+		dataKey := cacheKey(address, taxYear)
+		_, _, _, cacheReadErr := cache.Get(dataKey)
+
+		if cacheReadErr == nil {
+			fmt.Println("Cached hit, skipping processing")
+			return
+		}
+
+		// Fetch the data async
 		go fetchData(address, taxYear, cache)
 	})
 
@@ -110,23 +85,24 @@ func main() {
 		}
 
 		dataKey := cacheKey(address, taxYear)
-		cachedData, _, _, err := cache.Get(dataKey)
+		cachedData, _, _, cacheReadErr := cache.Get(dataKey)
 
-		if err != nil {
-			log.Printf("Cache data found")
-			var data []DataPoint
-			json.Unmarshal([]byte(cachedData), &data)
-
-			c.JSON(http.StatusOK, gin.H{
-				"data": data,
-			})
-			cache.Del(dataKey)
-		} else {
-			log.Printf("Cache error %s", err)
+		if cacheReadErr != nil {
+			log.Printf("Cache error %s", cacheReadErr)
 			c.JSON(425, gin.H{
 				"data": nil,
 			})
+			c.Abort()
+			return
 		}
+
+		log.Printf("Cache data found")
+		var data []DataPoint
+		json.Unmarshal([]byte(cachedData), &data)
+
+		c.JSON(http.StatusOK, gin.H{
+			"data": data,
+		})
 	})
 
 	// Get the balance of a HNT wallet
