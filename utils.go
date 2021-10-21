@@ -97,7 +97,7 @@ func parseTaxYear(taxYear string) (int, error) {
 }
 
 func cacheKey(address string, taxYear int) string {
-	return fmt.Sprintf("sdsdd-%s-%d", address, taxYear)
+	return fmt.Sprintf("v1-%s-%d", address, taxYear)
 }
 
 func getDataByAddress(address string, cache *mc.Client, startTime time.Time, endTime time.Time) []DataPoint {
