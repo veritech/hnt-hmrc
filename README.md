@@ -20,7 +20,7 @@ I wrote this as week script for myself, and thought the community might find it 
 It doesn't, thankfully it's hosted on heroku's free tier so it doesn't cost me anything to run. Donations are appreciated.
 
 #### Can I contribute?
-Code, sure! Create a PR and I'll take a look. This isn't my day job, so don't exact the best SLA
+Code, sure! Create a PR and I'll take a look. This isn't my day job, so don't expect the best SLA
 
 ### Running Locally
 
