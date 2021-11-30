@@ -72,11 +72,14 @@ func fetchRewards(address string, cursor string, cache *mc.Client, startTime tim
 	format := "2006-01-02"
 
 	url := fmt.Sprintf(
-		"https://api.helium.io/v1/hotspots/%s/rewards?max_time=%s&min_time=%s&cursor=%s",
+		"https://api.helium.io/v1/hotspots/%s/rewards?max_time=%s&min_time=%s",
 		address,
 		endTime.Format(format),
-		startTime.Format(format),
-		cursor)
+		startTime.Format(format))
+
+    if cursor != "" {
+        url = fmt.Sprintf("%s&cursor=%s", url, cursor)
+    }
 
 	response := fetchUrl(url, cache)
 

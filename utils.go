@@ -21,6 +21,8 @@ type DataPoint struct {
 }
 
 func fetchUrl(url string, cache *mc.Client) []byte {
+    // Add a delay to all requests
+    time.Sleep(250 * time.Millisecond)
 	return fetchUrlWithRetry(url, cache, false)
 }
 
@@ -40,6 +42,8 @@ func fetchUrlWithRetry(url string, cache *mc.Client, isRetry bool) []byte {
 		log.Println(err)
 		return []byte{}
 	}
+
+	req.Header.Add("User-Agent", "hnt-hmrc")
 
 	res, getErr := client.Do(req)
 	if getErr != nil {
