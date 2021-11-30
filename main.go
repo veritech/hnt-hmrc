@@ -13,8 +13,8 @@ import (
 	"os"
 )
 
-const RESULT_CACHE_TTL = 600
-const URL_CACHE_TTL = 60
+const RESULT_CACHE_TTL = 86400
+const URL_CACHE_TTL = 3600
 const MAX_YEAR = 2023
 const MIN_YEAR = 2020
 
