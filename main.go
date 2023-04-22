@@ -116,6 +116,23 @@ func main() {
 		})
 	})
 
+	router.GET("/solana/balance/:address/:token", func(c *gin.Context) {
+		address := c.Param("address")
+		token := c.Param("token")
+
+		balance, err := fetchSolanaAccountBalance(address, token)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"err": err,
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"balance": balance,
+			})
+		}
+	})
+
 	// Get the price of a token pair
 	router.GET("/price/:token", func(c *gin.Context) {
 		token := c.Param("token")
