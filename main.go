@@ -120,7 +120,7 @@ func main() {
 		address := c.Param("address")
 		token := c.Param("token")
 
-		balance, err := fetchSolanaAccountBalance(address, token)
+		balance, err := fetchSolanaAccountBalance(address, token, cache)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
