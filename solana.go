@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strconv"
 
+	"github.com/memcachier/mc"
 	"github.com/portto/solana-go-sdk/client"
 	"github.com/portto/solana-go-sdk/common"
 	"github.com/portto/solana-go-sdk/program/token"
@@ -26,18 +28,42 @@ var divisorByToken = map[string]float64{
 	"hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux": math.Pow(10, 8),
 }
 
-func fetchSolanaAccountBalance(address string, token string) (float64, error) {
+type BalanceResponse struct {
+	balance float64
+}
 
+func fetchSolanaAccountBalance(address string, token string, cache *mc.Client) (float64, error) {
+	cacheKey := fmt.Sprintf("v1-%s-%s", address, token)
+
+	cachedData, _, _, cacheReadErr := cache.Get(cacheKey)
+
+	if cacheReadErr == nil {
+		fmt.Println("[fetchSolanaAccountBalance] Cache hit %s", cacheKey)
+		return strconv.ParseFloat(cachedData, 32)
+	}
+
+	fmt.Println("[fetchSolanaAccountBalance] Cache Miss %s", cacheKey)
+
+	balanceValue, err := fetchSolanaAccountBalanceInternal(address, token)
+
+	cache.Set(cacheKey, strconv.FormatFloat(balanceValue, 'b', 4, 64), 0, RESULT_CACHE_TTL, 0)
+
+	return balanceValue, err
+}
+
+func fetchSolanaAccountBalanceInternal(address string, token string) (float64, error) {
 	if token == "sol" {
+		fmt.Println("[fetchSolanaAccountBalanceInternal] fetching SOL balance %s %s", address, token)
 		return fetchSolanaBalance(address)
 	}
 
 	tokenAddress := addressByToken[token]
 
 	if tokenAddress == "" {
-		return 0, fmt.Errorf("Error")
+		return 0, fmt.Errorf("Unknown token, only HNT,IOT are supported atm")
 	}
 
+	fmt.Println("[fetchSolanaAccountBalanceInternal] fetching SPL balance %s %s", address, token)
 	return fetchSPLBalance(address, tokenAddress)
 }
 
