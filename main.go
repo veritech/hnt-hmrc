@@ -126,6 +126,8 @@ func main() {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": err,
 			})
+			c.Abort()
+			return
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"balance": balance,
@@ -140,9 +142,12 @@ func main() {
 		price, err := getMarketPrice(token, cache)
 
 		if err != nil {
+			fmt.Println("Unable to get the price for %s %v", token, err)
 			c.JSON(400, gin.H{
 				"error": "Bad token provided",
 			})
+			c.Abort()
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
