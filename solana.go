@@ -34,7 +34,7 @@ type BalanceResponse struct {
 }
 
 func fetchSolanaAccountBalance(address string, token string, cache *mc.Client) (float64, error) {
-	cacheKey := fmt.Sprintf("v1-%s-%s", address, token)
+	cacheKey := fmt.Sprintf("v2-%s-%s", address, token)
 
 	cachedData, _, _, cacheReadErr := cache.Get(cacheKey)
 
@@ -47,7 +47,7 @@ func fetchSolanaAccountBalance(address string, token string, cache *mc.Client) (
 
 	balanceValue, err := fetchSolanaAccountBalanceInternal(address, token)
 
-	cache.Set(cacheKey, strconv.FormatFloat(balanceValue, 'b', 4, 64), 0, RESULT_CACHE_TTL, 0)
+	cache.Set(cacheKey, fmt.Sprintf("%.4f", balanceValue), 0, RESULT_CACHE_TTL, 0)
 
 	return balanceValue, err
 }
