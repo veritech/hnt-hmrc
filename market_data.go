@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/memcachier/mc"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/memcachier/mc"
 )
 
 type PricesBytime = map[time.Time]float64
@@ -129,7 +130,7 @@ func getMarketPrice(tickerOrIdentifier string, cache *mc.Client) (float64, error
 	var currencyValue map[string]float64
 	currencyValueError := json.Unmarshal(rootObject[identifier], &currencyValue)
 	if currencyValueError != nil {
-		log.Println(currencyValueError)
+		log.Printf("Parsing failed: %s %s", currencyValueError, string(response))
 		return 0, currencyValueError
 	}
 

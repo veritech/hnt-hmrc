@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"math"
 	"strconv"
 
@@ -38,11 +39,11 @@ func fetchSolanaAccountBalance(address string, token string, cache *mc.Client) (
 	cachedData, _, _, cacheReadErr := cache.Get(cacheKey)
 
 	if cacheReadErr == nil {
-		fmt.Println("[fetchSolanaAccountBalance] Cache hit %s", cacheKey)
+		log.Printf("[fetchSolanaAccountBalance] Cache hit %s", cacheKey)
 		return strconv.ParseFloat(cachedData, 32)
 	}
 
-	fmt.Println("[fetchSolanaAccountBalance] Cache Miss %s", cacheKey)
+	log.Printf("[fetchSolanaAccountBalance] Cache Miss %s", cacheKey)
 
 	balanceValue, err := fetchSolanaAccountBalanceInternal(address, token)
 
@@ -53,7 +54,7 @@ func fetchSolanaAccountBalance(address string, token string, cache *mc.Client) (
 
 func fetchSolanaAccountBalanceInternal(address string, token string) (float64, error) {
 	if token == "sol" {
-		fmt.Println("[fetchSolanaAccountBalanceInternal] fetching SOL balance %s %s", address, token)
+		log.Printf("[fetchSolanaAccountBalanceInternal] fetching SOL balance %s %s", address, token)
 		return fetchSolanaBalance(address)
 	}
 
@@ -63,7 +64,7 @@ func fetchSolanaAccountBalanceInternal(address string, token string) (float64, e
 		return 0, fmt.Errorf("Unknown token, only HNT,IOT are supported atm")
 	}
 
-	fmt.Println("[fetchSolanaAccountBalanceInternal] fetching SPL balance %s %s", address, token)
+	log.Printf("[fetchSolanaAccountBalanceInternal] fetching SPL balance %s %s", address, token)
 	return fetchSPLBalance(address, tokenAddress)
 }
 
@@ -107,7 +108,7 @@ func fetchSPLBalance(address string, tokenAddress string) (float64, error) {
 	account, err := filterAccountsByToken(accounts, tokenAddress)
 
 	if err != nil {
-		fmt.Printf("Unable to find token balance on account")
+		log.Print("Unable to find token balance on account")
 	}
 
 	return float64(account.Amount) / divisorByToken[tokenAddress], nil

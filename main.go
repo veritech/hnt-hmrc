@@ -7,7 +7,6 @@ import (
 	"github.com/memcachier/mc"
 	// 	"io"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -63,7 +62,7 @@ func main() {
 		_, _, _, cacheReadErr := cache.Get(dataKey)
 
 		if cacheReadErr == nil {
-			fmt.Println("Cached hit, skipping processing")
+			log.Println("Cached hit, skipping processing")
 			return
 		}
 
@@ -123,6 +122,7 @@ func main() {
 		balance, err := fetchSolanaAccountBalance(address, token, cache)
 
 		if err != nil {
+			log.Printf("Unable to solana balance %s %s", address, token)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": err,
 			})
@@ -142,7 +142,7 @@ func main() {
 		price, err := getMarketPrice(token, cache)
 
 		if err != nil {
-			fmt.Println("Unable to get the price for %s %v", token, err)
+			log.Printf("Unable to get the price for %s %v", token, err)
 			c.JSON(400, gin.H{
 				"error": "Bad token provided",
 			})
