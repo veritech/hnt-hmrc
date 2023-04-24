@@ -40,7 +40,7 @@ func fetchSolanaAccountBalance(address string, token string, cache *mc.Client) (
 
 	if cacheReadErr == nil {
 		log.Printf("[fetchSolanaAccountBalance] Cache hit %s", cacheKey)
-		return strconv.ParseFloat(cachedData, 32)
+		return strconv.ParseFloat(cachedData, 64)
 	}
 
 	log.Printf("[fetchSolanaAccountBalance] Cache Miss %s", cacheKey)

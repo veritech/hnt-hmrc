@@ -122,7 +122,7 @@ func main() {
 		balance, err := fetchSolanaAccountBalance(address, token, cache)
 
 		if err != nil {
-			log.Printf("Unable to solana balance %s %s", address, token)
+			log.Printf("Unable to fetch solana balance %s %s %s", address, token, err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": err,
 			})
