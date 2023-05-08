@@ -15,8 +15,9 @@ import (
 )
 
 var addressByToken = map[string]string{
-	"iot": "iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns",
-	"hnt": "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux",
+	"iot":    "iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns",
+	"hnt":    "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux",
+	"mobile": "mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6",
 }
 
 /*
