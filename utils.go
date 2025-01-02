@@ -73,6 +73,7 @@ func fetchUrlWithRetry(url string, cache *mc.Client, isRetry bool) []byte {
 	_, cacheWriteErr := cache.Set(url, string(body), 0, URL_CACHE_TTL, 0)
 	if cacheWriteErr != nil {
 		log.Printf("Failed to cache %s\n", url)
+		log.Println("Cache write error: ", cacheWriteErr)
 	}
 
 	return body
